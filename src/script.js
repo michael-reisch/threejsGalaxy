@@ -18,8 +18,13 @@ const scene = new THREE.Scene()
  * Galaxy
  */
 const parameters = {}
-parameters.count = 1000
-parameters.size = 0.02
+parameters.count = 100000
+parameters.size = 0.01
+parameters.radius = 5
+parameters.branches = 3
+parameters.spin = 1
+parameters.randomness = 0.02
+parameters.randomnessPower = 3
 
 let particlesGeometry = null
 let particlesMaterial = null
@@ -39,14 +44,40 @@ const generateGalaxy = () => {
   particlesGeometry = new THREE.BufferGeometry()
   const particlesPositions = new Float32Array(parameters.count * 3)
 
-  for (let i = 0; i < parameters.count * 3; i++) {
+  for (let i = 0; i < parameters.count; i++) {
     const i3 = i * 3
+
+    const radius = Math.random() * parameters.radius
+    const spinAngle = radius * parameters.spin
+    const branchAngle =
+      ((i % parameters.branches) / parameters.branches) * Math.PI * 2
+
+    const randomX =
+      Math.pow(Math.random(), parameters.randomnessPower) *
+      (Math.random() < 0.5 ? 1 : -1) *
+      parameters.randomness *
+      radius
+
+    const randomY =
+      Math.pow(Math.random(), parameters.randomnessPower) *
+      (Math.random() < 0.5 ? 1 : -1) *
+      parameters.randomness *
+      radius
+
+    const randomZ =
+      Math.pow(Math.random(), parameters.randomnessPower) *
+      (Math.random() < 0.5 ? 1 : -1) *
+      parameters.randomness *
+      radius
+
     //   x
-    particlesPositions[i3] = Math.random() - 0.5
+    particlesPositions[i3] =
+      Math.cos(branchAngle + spinAngle) * radius + randomX
     //   y
-    particlesPositions[i3 + 1] = Math.random() - 0.5
+    particlesPositions[i3 + 1] = randomY
     //   z
-    particlesPositions[i3 + 2] = Math.random() - 0.5
+    particlesPositions[i3 + 2] =
+      Math.sin(branchAngle + spinAngle) * radius + randomZ
   }
 
   particlesGeometry.setAttribute(
@@ -79,17 +110,58 @@ generateGalaxy()
  */
 gui
   .add(parameters, 'count')
+  .name('star count')
   .min(100)
   .max(1000000)
   .step(100)
   .onFinishChange(generateGalaxy)
 gui
   .add(parameters, 'size')
+  .name('star size')
   .min(0.001)
   .max(0.1)
   .step(0.001)
   .onFinishChange(generateGalaxy)
 
+gui
+  .add(parameters, 'radius')
+  .name('galaxy size')
+  .min(0.01)
+  .max(20)
+  .step(0.01)
+  .onFinishChange(generateGalaxy)
+
+gui
+  .add(parameters, 'branches')
+  .name('galaxy branches')
+  .min(2)
+  .max(20)
+  .step(1)
+  .onFinishChange(generateGalaxy)
+
+gui
+  .add(parameters, 'spin')
+  .name('galaxy spin')
+  .min(-5)
+  .max(5)
+  .step(0.001)
+  .onFinishChange(generateGalaxy)
+
+gui
+  .add(parameters, 'randomness')
+  .name('randomness')
+  .min(0)
+  .max(2)
+  .step(0.001)
+  .onFinishChange(generateGalaxy)
+
+gui
+  .add(parameters, 'randomnessPower')
+  .name('gravity')
+  .min(1)
+  .max(10)
+  .step(0.001)
+  .onFinishChange(generateGalaxy)
 /**
  * Sizes
  */
