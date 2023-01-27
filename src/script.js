@@ -23,8 +23,10 @@ parameters.size = 0.01
 parameters.radius = 5
 parameters.branches = 3
 parameters.spin = 1
-parameters.randomness = 0.02
+parameters.randomness = .7
 parameters.randomnessPower = 3
+parameters.innerColor = '#ff6040'
+parameters.outerColor = '#1b3984'
 
 let particlesGeometry = null
 let particlesMaterial = null
@@ -43,6 +45,10 @@ const generateGalaxy = () => {
    */
   particlesGeometry = new THREE.BufferGeometry()
   const particlesPositions = new Float32Array(parameters.count * 3)
+  const particlesColors = new Float32Array(parameters.count * 3)
+
+  const innerColor = new THREE.Color(parameters.innerColor)
+  const outerColor = new THREE.Color(parameters.outerColor)
 
   for (let i = 0; i < parameters.count; i++) {
     const i3 = i * 3
@@ -54,19 +60,19 @@ const generateGalaxy = () => {
 
     const randomX =
       Math.pow(Math.random(), parameters.randomnessPower) *
-      (Math.random() < 0.5 ? 1 : -1) *
+      (Math.random() > 0.5 ? 1 : -1) *
       parameters.randomness *
       radius
 
     const randomY =
       Math.pow(Math.random(), parameters.randomnessPower) *
-      (Math.random() < 0.5 ? 1 : -1) *
+      (Math.random() > 0.5 ? 1 : -1) *
       parameters.randomness *
       radius
 
     const randomZ =
       Math.pow(Math.random(), parameters.randomnessPower) *
-      (Math.random() < 0.5 ? 1 : -1) *
+      (Math.random() > 0.5 ? 1 : -1) *
       parameters.randomness *
       radius
 
@@ -78,11 +84,24 @@ const generateGalaxy = () => {
     //   z
     particlesPositions[i3 + 2] =
       Math.sin(branchAngle + spinAngle) * radius + randomZ
+
+    // Color
+    const mixedColor = innerColor.clone()
+    mixedColor.lerp(outerColor, radius/parameters.radius)
+
+    particlesColors[i3] = mixedColor.r
+    particlesColors[i3 + 1] = mixedColor.g
+    particlesColors[i3 + 2] = mixedColor.b
   }
 
   particlesGeometry.setAttribute(
     'position',
     new THREE.BufferAttribute(particlesPositions, 3)
+  )
+
+  particlesGeometry.setAttribute(
+    'color',
+    new THREE.BufferAttribute(particlesColors, 3)
   )
 
   /**
@@ -94,6 +113,7 @@ const generateGalaxy = () => {
     transparent: true,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
+    vertexColors: true,
   })
 
   /**
@@ -162,6 +182,10 @@ gui
   .max(10)
   .step(0.001)
   .onFinishChange(generateGalaxy)
+
+gui.addColor(parameters, 'innerColor').onFinishChange(generateGalaxy)
+
+gui.addColor(parameters, 'outerColor').onFinishChange(generateGalaxy)
 /**
  * Sizes
  */
