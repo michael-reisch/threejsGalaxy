@@ -6,7 +6,7 @@ import * as dat from 'lil-gui'
  * Base
  */
 // Debug
-const gui = new dat.GUI()
+const gui = new dat.GUI({ width: 300 })
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -17,38 +17,78 @@ const scene = new THREE.Scene()
 /**
  * Galaxy
  */
-const count = 1000
-const parameters = {
-  count: count,
-}
+const parameters = {}
+parameters.count = 1000
+parameters.size = 0.02
+
+let particlesGeometry = null
+let particlesMaterial = null
+let stars = null
 
 const generateGalaxy = () => {
-  const particlesGeometry = new THREE.BufferGeometry()
-  const particlesPositions = new Float32Array(parameters.count * 3)
-
-  for (let i = 0; i < count * 3; i++) {
-    particlesPositions[i] = (Math.random() - 0.5) * 10
+  // Destroy existing galaxy to replace with new one when doing tweaks
+  if (stars !== null) {
+    particlesGeometry.dispose()
+    particlesMaterial.dispose()
+    scene.remove(stars)
   }
 
-  // Geometry
+  /**
+   * Geometry
+   */
+  particlesGeometry = new THREE.BufferGeometry()
+  const particlesPositions = new Float32Array(parameters.count * 3)
+
+  for (let i = 0; i < parameters.count * 3; i++) {
+    const i3 = i * 3
+    //   x
+    particlesPositions[i3] = Math.random() - 0.5
+    //   y
+    particlesPositions[i3 + 1] = Math.random() - 0.5
+    //   z
+    particlesPositions[i3 + 2] = Math.random() - 0.5
+  }
+
   particlesGeometry.setAttribute(
     'position',
     new THREE.BufferAttribute(particlesPositions, 3)
   )
 
-  //  Material
-  const particlesMaterial = new THREE.PointsMaterial({
-    size: 0.1,
+  /**
+   * Material
+   */
+  particlesMaterial = new THREE.PointsMaterial({
+    size: parameters.size,
     sizeAttenuation: true,
     transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
   })
 
-  // Points
-  const stars = new THREE.Points(particlesGeometry, particlesMaterial)
+  /**
+   * Points
+   */
+  stars = new THREE.Points(particlesGeometry, particlesMaterial)
   scene.add(stars)
 }
 
 generateGalaxy()
+
+/**
+ * GUI Tweaks
+ */
+gui
+  .add(parameters, 'count')
+  .min(100)
+  .max(1000000)
+  .step(100)
+  .onFinishChange(generateGalaxy)
+gui
+  .add(parameters, 'size')
+  .min(0.001)
+  .max(0.1)
+  .step(0.001)
+  .onFinishChange(generateGalaxy)
 
 /**
  * Sizes
@@ -87,7 +127,9 @@ camera.position.y = 3
 camera.position.z = 3
 scene.add(camera)
 
-// Controls
+/**
+ * Controls
+ */
 const controls = new OrbitControls(camera, canvas)
 controls.enableDamping = true
 
