@@ -23,7 +23,7 @@ parameters.size = 0.01
 parameters.radius = 5
 parameters.branches = 3
 parameters.spin = 1
-parameters.randomness = .7
+parameters.randomness = 0.7
 parameters.randomnessPower = 3
 parameters.innerColor = '#ff6040'
 parameters.outerColor = '#1b3984'
@@ -87,7 +87,7 @@ const generateGalaxy = () => {
 
     // Color
     const mixedColor = innerColor.clone()
-    mixedColor.lerp(outerColor, radius/parameters.radius)
+    mixedColor.lerp(outerColor, radius / parameters.radius)
 
     particlesColors[i3] = mixedColor.r
     particlesColors[i3 + 1] = mixedColor.g
